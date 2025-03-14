@@ -1,0 +1,8 @@
+Ứng dụng này được xây dựng bằng React với TypeScript và Tailwind CSS để tạo giao diện.
+
+Để chạy ứng dụng:
+
+1. Cài đặt Node.js và npm.
+2. Trong thư mục dự án, chạy npm install để cài đặt các phụ thuộc.
+3. Chạy npm run dev để khởi động server.
+4. Truy cập trang web tại http://localhost:3000.
