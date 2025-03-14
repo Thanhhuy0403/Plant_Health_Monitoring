@@ -1,0 +1,216 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Container chính cho toàn trang */
+.mrp-container {
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, sans-serif;
+  position: relative;
+}
+
+.mrp-top-info {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.9);
+  margin: 30px;
+}
+
+.mrp-chart-section {
+  flex: 1;
+  padding: 20px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 5px;
+  /* Dành cho desktop lớn, dành khoảng không gian bên phải cho khối right-side */
+  margin-right: 30%;
+}
+
+.mrp-chart-section h2 {
+  margin-bottom: 20px;
+  font-size: 40px;
+}
+
+.mrp-chart-buttons {
+  margin-bottom: 50px;
+  font-weight: lighter;
+}
+
+.mrp-chart-buttons button {
+  padding: 8px 16px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  font-weight: normal;
+  transition: background 0.3s ease;
+}
+
+.mrp-chart-buttons button.active {
+  color: #fff;
+  font-weight: bold;
+}
+
+.mrp-btn-temp.active {
+  background: #ff7300;
+  border-color: #ff7300;
+}
+
+.mrp-btn-humi.active {
+  background: #387908;
+  border-color: #387908;
+}
+
+/* Khung chứa biểu đồ */
+.mrp-chart-container {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Right side ban đầu được định vị tuyệt đối cho desktop lớn */
+.mrp-right-side {
+  position: absolute;
+  top: 80px;
+  right: 20px;
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Calendar */
+.mrp-calendar {
+  background: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Hộp ảnh */
+.mrp-image-box {
+  width: 350px;
+  height: 250px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mrp-image-box img {
+  width: 100%;
+  height: auto;
+}
+
+.mrp-capture-button {
+  padding: 10px 20px;
+  background: #55d8d4;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  color: white;
+}
+
+.mrp-time-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 20px;
+}
+
+.mrp-time-selector label {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.mrp-time-selector input[type="time"] {
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.mrp-time-selector input[type="time"]:hover,
+.mrp-time-selector input[type="time"]:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+}
+
+.mrp-time-selector button {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.mrp-time-selector button:hover {
+  background-color: #0056b3;
+}
+
+/* ===== MEDIA QUERIES ===== */
+
+/* iPhone Portrait (430×932) */
+@media only screen and (max-width: 430px) {
+  .mrp-chart-section {
+    margin-right: 0;
+  }
+  .mrp-right-side {
+    position: static;
+    width: 100%;
+    margin: 20px 0;
+  }
+}
+
+/* iPhone Landscape (932×430) */
+@media only screen and (max-height: 430px) and (min-width: 600px) {
+  .mrp-chart-section {
+    margin-right: 0;
+  }
+  .mrp-right-side {
+    position: static;
+    width: 100%;
+    margin: 20px 0;
+  }
+}
+
+/* Tablet (1024×1366 và 1366×1024) */
+@media only screen and (min-width: 1024px) and (max-width: 1366px) {
+  .mrp-chart-section {
+    margin-right: 0;
+  }
+  .mrp-right-side {
+    position: static;
+    width: 100%;
+    margin: 20px 0;
+  }
+}
+
+
+
+
+
+
+
