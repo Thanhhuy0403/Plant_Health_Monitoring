@@ -103,8 +103,10 @@
   
   .signup-container input:focus {
     /* border-color: #2d6a4f; */
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.2);
+    background: #ffffff;  
+    border: #ffffff;
+    box-shadow: 0 0 0 3px rgba(4, 90, 51, 0.2);
+
   }
   
   .signup-container input::placeholder {
@@ -124,6 +126,7 @@
     border: none;
     position: relative;
     overflow: hidden;
+    margin-top: 20px;
   }
   
   .signup-container Button:hover {

@@ -1,8 +1,17 @@
-//Đã tạo 1 db trên firebase, sau mỗi câu trl sẽ lưu vào trong đó
-//History được lấy từ firebase
 import React, { useState, useEffect } from "react";
 import "./style.css";
 import sendIcon from "../../assets/send_icon.png";
+import axios from "axios";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  serverTimestamp,
+  DocumentData,
+} from "firebase/firestore";
+import { db } from "../../components/firebaseConfig";
 
 interface Message {
   question: string;
@@ -20,25 +29,32 @@ const PromptPage: React.FC = () => {
   const [messageHistory, setMessageHistory] = useState<Message[]>([]);
   const [showHistory, setShowHistory] = useState(window.innerWidth > 768);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
 
-  const fetchHistory = async () => {
+  const fetchHistoryFromFirebase = async () => {
     try {
-      const res = await fetch(`https://io.adafruit.com/api/v2/${USERNAME}/feeds/iot-prompt`, {
-        headers: { "X-AIO-Key": API_KEY }
+      const qRef = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(qRef);
+      const fetchedHistory: Message[] = [];
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data() as DocumentData;
+        const timeString = data.createdAt
+          ? data.createdAt.toDate().toISOString()
+          : new Date().toISOString();
+        fetchedHistory.push({
+          question: data.question || "",
+          answer: data.answer || "",
+          createdAt: timeString,
+        });
       });
-      if (!res.ok) throw new Error("Network response was not ok");
-      const data: Message[] = await res.json();
-      const sorted = data.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-      setMessageHistory(sorted);
+      setMessageHistory(fetchedHistory);
     } catch (error) {
-      console.error("Error fetching history:", error);
+      console.error("Lỗi khi lấy lịch sử từ Firestore:", error);
     }
   };
 
   useEffect(() => {
-    fetchHistory();
+    fetchHistoryFromFirebase();
     const handleResize = () => {
       setShowHistory(window.innerWidth > 768);
     };
@@ -50,41 +66,66 @@ const PromptPage: React.FC = () => {
     if (!question.trim() || isLoading) return;
     setIsLoading(true);
     setHasAnswer(false);
+    setSelectedMessage(null); // Xóa tin nhắn được chọn nếu có
     const currentDate = new Date().toISOString();
     try {
-      const res = await fetch(`https://io.adafruit.com/api/v2/${USERNAME}/feeds/iot-prompt`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-AIO-Key": API_KEY },
-        body: JSON.stringify({ question, createdAt: currentDate }),
-      });
-      if (!res.ok) throw new Error("Network response was not ok");
-      const data = await res.json();
-      const fetchedAnswer = data.last_value;
+      const postResponse = await axios.post(
+        `https://io.adafruit.com/api/v2/${USERNAME}/feeds/iot-prompt/data`,
+        { value: question },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "X-AIO-Key": API_KEY,
+          },
+        }
+      );
+      const data = postResponse.data;
+      const fetchedAnswer = data.last_value || "Không có câu trả lời.";
       setAnswer(fetchedAnswer);
       setHasAnswer(true);
-      setMessageHistory((prev) => [{ question, answer: fetchedAnswer, createdAt: currentDate }, ...prev]);
+      await addDoc(collection(db, "messages"), {
+        question: question,
+        answer: fetchedAnswer,
+        createdAt: serverTimestamp(),
+      });
+      setMessageHistory((prev) => [
+        { question, answer: fetchedAnswer, createdAt: currentDate },
+        ...prev,
+      ]);
+      setQuestion(""); // Xóa ô nhập sau khi gửi
     } catch (error) {
-      console.error("Error sending question:", error);
-      setAnswer("An error occurred. Please try again later.");
+      console.error("Lỗi khi gửi câu hỏi:", error);
+      setAnswer("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
       setHasAnswer(true);
     }
     setIsLoading(false);
   };
 
+  const handleHistoryClick = (msg: Message) => {
+    setSelectedMessage(msg);
+    setQuestion(msg.question); // Đưa câu hỏi cũ vào ô nhập
+    setAnswer(msg.answer);
+    setHasAnswer(true);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit" });
+  };
+
   return (
     <div className="prompt-container">
       <button className="toggle-history-button" onClick={() => setShowHistory(!showHistory)}>
-        {showHistory ? "Hide History" : "Show History"}
+        {showHistory ? "Ẩn lịch sử" : "Hiện lịch sử"}
       </button>
       {showHistory && (
         <nav className="prompt-navbar">
-          <h3>Message History</h3>
+          <h3>Lịch sử tin nhắn</h3>
           <ul>
             {messageHistory.map((msg, index) => (
-              <li key={index}>
-                <strong>{new Date(msg.createdAt).toLocaleDateString()}:</strong>
+              <li key={index} onClick={() => handleHistoryClick(msg)} className="history-item">
+                <strong>{formatDate(msg.createdAt)}:</strong>
                 <p className="question-text">{msg.question}</p>
-                <p className="answer-text">{msg.answer}</p>
               </li>
             ))}
           </ul>
@@ -93,14 +134,13 @@ const PromptPage: React.FC = () => {
       <div className="prompt-left-content">
         {!hasAnswer && (
           <h2 className="prompt-main-title">
-            Please enter your question regarding<br />
-            the condition of your plant
+            Vui lòng nhập câu hỏi về tình trạng cây của bạn
           </h2>
         )}
         <div className="prompt-bubble">
           <div className="prompt-bubble-input-row">
             <textarea
-              placeholder="Example: Is my plant showing signs of disease?"
+              placeholder="Ví dụ: Cây của tôi có dấu hiệu bị bệnh không?"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               onInput={(e) => {
@@ -117,7 +157,7 @@ const PromptPage: React.FC = () => {
                   <span>.</span>
                 </div>
               ) : (
-                <img src={sendIcon} alt="Send" />
+                <img src={sendIcon} alt="Gửi" />
               )}
             </button>
           </div>
@@ -126,7 +166,7 @@ const PromptPage: React.FC = () => {
           <div className="prompt-bubble-answer">
             <div className="answer-header">
               <span className="status-indicator"></span>
-              <h3>Analysis Result</h3>
+              <h3>{selectedMessage ? "Chi tiết tin nhắn" : "Kết quả phân tích"}</h3>
             </div>
             <p className="answer-content">{answer}</p>
           </div>

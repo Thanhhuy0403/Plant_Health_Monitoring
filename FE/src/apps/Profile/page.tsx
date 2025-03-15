@@ -13,7 +13,6 @@ interface UserProfile {
   avatarUrl?: string;
 }
 
-
 const ProfilePage: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -65,7 +64,7 @@ const ProfilePage: React.FC = () => {
             });
           }
         } catch (error) {
-          console.error("Error fetching profile:", error);
+          console.error("Lỗi khi lấy thông tin hồ sơ:", error);
         } finally {
           setIsLoading(false);
         }
@@ -80,14 +79,11 @@ const ProfilePage: React.FC = () => {
 
   if (isLoading) {
     return (
-        <div className='profile-loader-container'>
-            <div className="profile-loader">
-            </div>
-        </div>
-      
+      <div className="profile-loader-container">
+        <div className="profile-loader"></div>
+      </div>
     );
   }
-
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -111,7 +107,7 @@ const ProfilePage: React.FC = () => {
         setProfile(updatedProfile);
         setIsEditing(false);
       } catch (error) {
-        console.error("Error updating profile:", error);
+        console.error("Lỗi khi cập nhật hồ sơ:", error);
       }
     }
   };
@@ -135,12 +131,12 @@ const ProfilePage: React.FC = () => {
         <div className="profile-info">
           {profile.avatarUrl && (
             <img
-            src={profile.avatarUrl ? profile.avatarUrl : "/avt.jpg"}
-            alt="Avatar"
-            className="profile-avatar"
-          />
+              src={profile.avatarUrl ? profile.avatarUrl : "/avt.jpg"}
+              alt="Ảnh đại diện"
+              className="profile-avatar"
+            />
           )}
-          <p><strong>Username:</strong> {profile.username}</p>
+          <p><strong>Tên đăng nhập:</strong> {profile.username}</p>
           <p><strong>Họ và Tên:</strong> {profile.fullName}</p>
           <p><strong>Email:</strong> {profile.email}</p>
           <p><strong>Ngày Sinh:</strong> {profile.dateofbirth || "Chưa cập nhật"}</p>
@@ -162,9 +158,9 @@ const ProfilePage: React.FC = () => {
             >
               Cập nhật thông tin
             </button>
-            <button className="profile-submit-button" onClick={() => { /* Chuyển hướng tới trang đổi mật khẩu */ }}>
+            {/* <button className="profile-submit-button" onClick={() => }>
               Đổi mật khẩu
-            </button>
+            </button> */}
           </div>
         </div>
       ) : currentUser ? (

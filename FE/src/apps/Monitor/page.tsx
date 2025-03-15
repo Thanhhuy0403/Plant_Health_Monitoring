@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 import axios from "axios";
 import './style.css';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
@@ -27,7 +26,9 @@ const API_KEY = "aio_qVRB87ZJJ5e47Cwu5w0Wf2Boin6B";
 
 const MonitorReportPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedTime, setSelectedTime] = useState<string>(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  const [selectedTime, setSelectedTime] = useState<string>(
+    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  );
   const [useAutoTime, setUseAutoTime] = useState<boolean>(true);
   const [temperature, setTemperature] = useState<number | null>(null);
   const [humidity, setHumidity] = useState<number | null>(null);
@@ -39,20 +40,25 @@ const MonitorReportPage: React.FC = () => {
   const [showIrrigationModal, setShowIrrigationModal] = useState<boolean>(false);
   const [auto_temp, setAutoTemp] = useState<string>("");
   const [auto_humi, setAutoHumi] = useState<string>("");
+
   useEffect(() => {
     const fetchHistoricalData = async () => {
       try {
-        const tempRes = await axios.get(`https://io.adafruit.com/api/v2/${USERNAME}/feeds/iot-temp/data?X-AIO-Key=${API_KEY}`);
-        const humiRes = await axios.get(`https://io.adafruit.com/api/v2/${USERNAME}/feeds/iot-humi/data?X-AIO-Key=${API_KEY}`);
+        const tempRes = await axios.get(
+          `https://io.adafruit.com/api/v2/${USERNAME}/feeds/iot-temp/data?X-AIO-Key=${API_KEY}`
+        );
+        const humiRes = await axios.get(
+          `https://io.adafruit.com/api/v2/${USERNAME}/feeds/iot-humi/data?X-AIO-Key=${API_KEY}`
+        );
 
         const tempData = tempRes.data.slice(0, 30).map((item: { created_at: string; value: string }) => ({
-          day: new Date(item.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }), 
+          day: new Date(item.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }),
           temperature: parseFloat(item.value),
           humidity: 0,
         }));
-        
+
         const humiData = humiRes.data.slice(0, 30).map((item: { created_at: string; value: string }) => ({
-          day: new Date(item.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }), 
+          day: new Date(item.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }),
           temperature: 0,
           humidity: parseFloat(item.value),
         }));
@@ -61,18 +67,16 @@ const MonitorReportPage: React.FC = () => {
           ...tempItem,
           humidity: humiData[index] ? humiData[index].humidity : 0,
         }));
-        
 
         setChartData(mergedData);
       } catch (error) {
-        console.error("Error fetching historical data:", error);
+        console.error("Lỗi khi lấy dữ liệu lịch sử:", error);
       }
     };
 
     fetchHistoricalData();
   }, []);
 
-  
   useEffect(() => {
     if (useAutoTime) {
       const updateTime = () => {
@@ -93,9 +97,9 @@ const MonitorReportPage: React.FC = () => {
       .then((data) => {
         const temp = parseFloat(data.last_value);
         setTemperature(temp);
-        setChartData(prev => [...prev, { day: "Today", temperature: temp, humidity: 0 }]);
+        setChartData(prev => [...prev, { day: "Hôm nay", temperature: temp, humidity: 0 }]);
       })
-      .catch((err) => console.error("Error fetching temperature data:", err));
+      .catch((err) => console.error("Lỗi khi lấy dữ liệu nhiệt độ:", err));
 
     fetch(`https://io.adafruit.com/api/v2/${USERNAME}/feeds/iot-humi`, {
       headers: { "X-AIO-Key": API_KEY }
@@ -112,10 +116,10 @@ const MonitorReportPage: React.FC = () => {
             newChartData[lastIndex] = newEntry;
             return newChartData;
           }
-          return [{ day: "Today", temperature: 0, humidity: hum }];
+          return [{ day: "Hôm nay", temperature: 0, humidity: hum }];
         });
       })
-      .catch((err) => console.error("Error fetching humidity data:", err));
+      .catch((err) => console.error("Lỗi khi lấy dữ liệu độ ẩm:", err));
 
     fetch(`https://io.adafruit.com/api/v2/${USERNAME}/feeds/iot-image`, {
       headers: { "X-AIO-Key": API_KEY }
@@ -126,7 +130,7 @@ const MonitorReportPage: React.FC = () => {
           setImageUrl(data.last_value);
         }
       })
-      .catch((err) => console.error("Error fetching image data:", err));
+      .catch((err) => console.error("Lỗi khi lấy dữ liệu hình ảnh:", err));
 
     fetch(`https://io.adafruit.com/api/v2/${USERNAME}/feeds/iot-light`, {
       headers: { "X-AIO-Key": API_KEY }
@@ -137,7 +141,7 @@ const MonitorReportPage: React.FC = () => {
           setLightOn(data.last_value.toLowerCase() === "on");
         }
       })
-      .catch((err) => console.error("Error fetching light data:", err));
+      .catch((err) => console.error("Lỗi khi lấy dữ liệu đèn:", err));
   }, []);
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,15 +165,14 @@ const MonitorReportPage: React.FC = () => {
           }
         }
       );
-      console.log("Sprinkle POST response:", response.data);
+      console.log("Phản hồi POST cho hệ thống tưới nước:", response.data);
       if (response.data.last_value && response.data.last_value.toLowerCase() === "activate") {
         setSprinkleOn(true);
       }
     } catch (error) {
-      console.error("Error activating sprinkle:", error);
+      console.error("Lỗi khi kích hoạt hệ thống tưới nước:", error);
     }
   };
-  
 
   const handleToggleLight = () => {
     const newState = lightOn ? "off" : "on";
@@ -187,7 +190,7 @@ const MonitorReportPage: React.FC = () => {
           setLightOn(data.last_value.toLowerCase() === "on");
         }
       })
-      .catch((err) => console.error("Error toggling light:", err));
+      .catch((err) => console.error("Lỗi khi chuyển trạng thái đèn:", err));
   };
 
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -204,26 +207,27 @@ const MonitorReportPage: React.FC = () => {
           },
         }
       );
-      await delay(8000);  
+      await delay(8000);
       const imageResponse = await fetch(`https://io.adafruit.com/api/v2/${USERNAME}/feeds/iot-image`, {
         headers: { "X-AIO-Key": API_KEY }
       });
-  
+
       const imageData = await imageResponse.json();
       if (imageData.last_value) {
         setImageUrl(imageData.last_value);
       }
     } catch (err) {
-      console.error("Error:", err);
+      console.error("Lỗi:", err);
     }
   };
 
-  const handleSelectIrrigationMode = async (mode:string,value_temp:string,value_humi:string) => {
+  const handleSelectIrrigationMode = async (mode: string, value_temp: string, value_humi: string) => {
     try {
       const postResponse = await axios.post(
         `https://io.adafruit.com/api/v2/${USERNAME}/feeds/iot-request/data`,
-        { 
-          value: mode, ...(mode === 'auto' ? { value:'!automatic-water'+':'+value_temp+':'+value_humi+'#'} : {})
+        {
+          value: mode,
+          ...(mode === 'auto' ? { value: '!automatic-water' + ':' + value_temp + ':' + value_humi + '#' } : {})
         },
         {
           headers: {
@@ -233,27 +237,26 @@ const MonitorReportPage: React.FC = () => {
         }
       );
       alert("Đã hoàn tất cài đặt chế độ tưới cây.");
-      setShowIrrigationModal(false)
+      setShowIrrigationModal(false);
     } catch (err) {
-      console.error("Error:", err);
+      console.error("Lỗi:", err);
     }
   };
-
 
   return (
     <div className="mrp-container">
       <div className="mrp-top-info">
-        <InfoBox label="Time" value={selectedTime} icon={timeIcon} />
-        <InfoBox label="Date" value={selectedDate.toLocaleDateString()} icon={dateIcon} />
-        <InfoBox label="Temperature" value={temperature !== null ? `${temperature} °C` : 'Loading...'} icon={tempIcon} />
-        <InfoBox label="Humidity" value={humidity !== null ? `${humidity} %` : 'Loading...'} icon={humiIcon} />
-        <InfoBox label="Light" value={lightOn ? "On" : "Off"} iconOn={lightOnIcon} iconOff={lightOffIcon} onChange={handleToggleLight} />
-        <InfoBox label="Sprinkle" value={""} icon={sprinkleOnIcon} buttonLabel="Activate" onButtonClick={handleSprinkleAction} />
+        <InfoBox label="Giờ" value={selectedTime} icon={timeIcon} />
+        <InfoBox label="Ngày" value={selectedDate.toLocaleDateString()} icon={dateIcon} />
+        <InfoBox label="Nhiệt độ" value={temperature !== null ? `${temperature} °C` : 'Đang tải...'} icon={tempIcon} />
+        <InfoBox label="Độ ẩm" value={humidity !== null ? `${humidity} %` : 'Đang tải...'} icon={humiIcon} />
+        <InfoBox label="Đèn" value={lightOn ? "Bật" : "Tắt"} iconOn={lightOnIcon} iconOff={lightOffIcon} onChange={handleToggleLight} />
+        <InfoBox label="Tưới nước" value={""} icon={sprinkleOnIcon} buttonLabel="Kích hoạt" onButtonClick={handleSprinkleAction} />
       </div>
       <div className="mrp-time-selector">
-        <label>Select Time:</label>
+        <label>Chọn giờ:</label>
         <input type="time" value={selectedTime} onChange={handleTimeChange} step="300" />
-        <button onClick={handleUseCurrentTime}>Use Current Time</button>
+        <button onClick={handleUseCurrentTime}>Sử dụng giờ hiện tại</button>
       </div>
       <div className="mrp-irrigation-mode-section">
         <button className="mrp-irrigation-mode-button" onClick={() => setShowIrrigationModal(true)}>
@@ -263,7 +266,7 @@ const MonitorReportPage: React.FC = () => {
       {showIrrigationModal && (
         <div className="modal-overlay">
           <div className="modal-container">
-            <h2>Setting tưới tiêu tự động</h2>
+            <h2>Cài đặt tưới tiêu tự động</h2>
             <table className="irrigation-table">
               <thead>
                 <tr>
@@ -271,35 +274,38 @@ const MonitorReportPage: React.FC = () => {
                   <th>Mô tả</th>
                   <th>Nhiệt độ</th>
                   <th>Độ ẩm</th>
-                  <th>Active</th>
+                  <th>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td>Tự động hoàn toàn</td>
                   <td>Dựa vào nhiệt độ và độ ẩm đất, hệ thống tự đưa ra quyết định tưới nước cho cây.</td>
-                  <td><input
-                    type="number"
-                    name="value_temp"
-                    value={auto_temp}
-                    min={10}
-                    max={40}
-                    onChange={(e) => setAutoTemp(e.target.value.toString())}
-                    required
-                  /></td>
                   <td>
-                  <input
-                    type="number"
-                    name="value_humi"
-                    value={auto_humi}
-                    min={0}
-                    max={100}
-                    onChange={(e) => setAutoHumi(e.target.value.toString())}
-                    required
-                  />
-                  </td>                  
+                    <input
+                      type="number"
+                      name="value_temp"
+                      value={auto_temp}
+                      min={10}
+                      max={40}
+                      onChange={(e) => setAutoTemp(e.target.value.toString())}
+                      required
+                    />
+                  </td>
                   <td>
-                    <button  onClick={() => {
+                    <input
+                      type="number"
+                      name="value_humi"
+                      value={auto_humi}
+                      min={0}
+                      max={100}
+                      onChange={(e) => setAutoHumi(e.target.value.toString())}
+                      required
+                    />
+                  </td>
+                  <td>
+                    <button
+                      onClick={() => {
                         const temp = parseInt(auto_temp, 10);
                         const humi = parseInt(auto_humi, 10);
 
@@ -322,24 +328,31 @@ const MonitorReportPage: React.FC = () => {
                       }}
                     >
                       Tiến hành
-                      </button>
+                    </button>
                   </td>
-
                 </tr>
               </tbody>
             </table>
-            <button className="modal-close-button" onClick={() => setShowIrrigationModal(false)}>Đóng</button>
+            <button className="modal-close-button" onClick={() => setShowIrrigationModal(false)}>
+              Đóng
+            </button>
           </div>
         </div>
       )}
       <div className="mrp-chart-section">
-        <h2>Report for the Last 30 Days</h2>
+        <h2>Báo cáo cho 30 ngày gần nhất</h2>
         <div className="mrp-chart-buttons">
-          <button className={`mrp-btn-temp ${chartType === 'temperature' ? 'active' : ''}`} onClick={() => setChartType('temperature')}>
-            Temperature
+          <button
+            className={`mrp-btn-temp ${chartType === 'temperature' ? 'active' : ''}`}
+            onClick={() => setChartType('temperature')}
+          >
+            Nhiệt độ
           </button>
-          <button className={`mrp-btn-humi ${chartType === 'humidity' ? 'active' : ''}`} onClick={() => setChartType('humidity')}>
-            Humidity
+          <button
+            className={`mrp-btn-humi ${chartType === 'humidity' ? 'active' : ''}`}
+            onClick={() => setChartType('humidity')}
+          >
+            Độ ẩm
           </button>
         </div>
         <div className="mrp-chart-container">
@@ -347,19 +360,38 @@ const MonitorReportPage: React.FC = () => {
             <LineChart width={1000} height={300} data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="day" />
-              <YAxis />
+              <YAxis
+                width={60}
+                tick={{
+                  style: {
+                    textAnchor: 'middle',
+                    dominantBaseline: 'middle',
+                    fontSize: '14px'
+                  }
+                }}
+              />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="temperature" stroke="#ff7300" name="Temperature (°C)" />
+              <Line type="monotone" dataKey="temperature" stroke="#ff7300" name="Nhiệt độ (°C)" />
             </LineChart>
           ) : (
             <BarChart width={1000} height={300} data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="day" />
-              <YAxis domain={[0, 100]} />
+              <YAxis
+                width={60}
+                domain={[0, 100]}
+                tick={{
+                  style: {
+                    textAnchor: 'middle',
+                    dominantBaseline: 'middle',
+                    fontSize: '14px'
+                  }
+                }}
+              />
               <Tooltip />
               <Legend />
-              <Bar dataKey="humidity" fill="#387908" name="Humidity (%)" />
+              <Bar dataKey="humidity" fill="#387908" name="Độ ẩm (%)" />
             </BarChart>
           )}
         </div>
@@ -370,11 +402,13 @@ const MonitorReportPage: React.FC = () => {
         </div>
         <div>
           <div className="mrp-image-box">
-            <img src={`data:image/jpeg;base64,${imageUrl}`} alt="Decoded Image" />
+            <img src={`data:image/jpeg;base64,${imageUrl}`} alt="Hình ảnh" />
           </div>
-          <button className="mrp-capture-button" onClick={handleCapture}>Capture</button>
+          <button className="mrp-capture-button" onClick={handleCapture}>
+            Chụp ảnh
+          </button>
         </div>
-      </div> 
+      </div>
     </div>
   );
 };
